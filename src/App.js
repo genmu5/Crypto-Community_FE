@@ -7,8 +7,17 @@ import PostList from './components/PostList';
 import PostDetail from './components/PostDetail';
 import Login from './pages/Login';
 import CreatePost from './pages/CreatePost';    // 새로 추가
+import 'chartjs-adapter-date-fns';
 
 import useAuth from './auth/useAuth';
+import { Chart as ChartJS, registerables } from 'chart.js';
+import { CandlestickController, CandlestickElement } from 'chartjs-chart-financial';
+
+ChartJS.register(
+    ...registerables,
+    CandlestickController,
+    CandlestickElement
+);
 
 function Header() {
     const navigate = useNavigate();
@@ -50,6 +59,7 @@ function Header() {
                 </button>
             )}
         </header>
+
     );
 }
 
