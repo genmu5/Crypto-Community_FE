@@ -1,23 +1,17 @@
-// src/App.js
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
-import Sidebar from './components/Sidebar';
-import ChartPlaceholder from './components/ChartPlaceholder';
-import PostList from './components/PostList';
-import PostDetail from './components/PostDetail';
-import Login from './pages/Login';
-import CreatePost from './pages/CreatePost';    // 새로 추가
-import 'chartjs-adapter-date-fns';
+import React, { useState } from 'react';
+import {
+    BrowserRouter as Router,
+    Routes,
+    Route,
+    useNavigate,
+} from 'react-router-dom';
 
 import useAuth from './auth/useAuth';
-import { Chart as ChartJS, registerables } from 'chart.js';
-import { CandlestickController, CandlestickElement } from 'chartjs-chart-financial';
-
-ChartJS.register(
-    ...registerables,
-    CandlestickController,
-    CandlestickElement
-);
+import Sidebar from './components/Sidebar';
+import Home from './pages/Home';
+import PostDetail from './components/PostDetail';
+import CreatePost from './pages/CreatePost';
+import Login from './pages/Login';
 
 function Header() {
     const navigate = useNavigate();
@@ -31,7 +25,6 @@ function Header() {
             >
                 Crypto Community
             </h1>
-
             {isLoggedIn ? (
                 <div className="flex items-center space-x-2">
                     <button
@@ -59,34 +52,31 @@ function Header() {
                 </button>
             )}
         </header>
-
     );
 }
 
 export default function App() {
+    // ① 선택된 마켓을 상태로 관리
+    const [selectedMarket, setSelectedMarket] = useState('KRW-BTC');
+
     return (
         <Router>
             <Header />
-
             <div className="pt-16 flex h-[calc(100vh-4rem)] bg-gray-50">
-                <Sidebar />
+                {/* ② 여기서만 사이드바 렌더, 클릭 시 state 변경 */}
+                <Sidebar
+                    selected={selectedMarket}
+                    onSelect={(code) => setSelectedMarket(code)}
+                />
+
+                {/* ③ Home 컴포넌트에 market prop 전달 */}
                 <main className="flex-1 p-8 overflow-auto">
-                    <div className="max-w-6xl mx-auto space-y-8">
-                        <Routes>
-                            <Route
-                                path="/"
-                                element={
-                                    <>
-                                        <ChartPlaceholder />
-                                        <PostList />
-                                    </>
-                                }
-                            />
-                            <Route path="/post/:postId" element={<PostDetail />} />
-                            <Route path="/create-post" element={<CreatePost />} />  {/* 글쓰기 라우트 */}
-                            <Route path="/login" element={<Login />} />
-                        </Routes>
-                    </div>
+                    <Routes>
+                        <Route path="/" element={<Home market={selectedMarket} />} />
+                        <Route path="/post/:postId" element={<PostDetail />} />
+                        <Route path="/create-post" element={<CreatePost />} />
+                        <Route path="/login" element={<Login />} />
+                    </Routes>
                 </main>
             </div>
         </Router>

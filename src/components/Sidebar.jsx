@@ -1,38 +1,80 @@
-import React from 'react';
-import { TrendingUp } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { FiTrendingUp } from 'react-icons/fi';
 
-export default function Sidebar() {
-    const coins = [
-        { symbol: 'BTC', change: '+1.23%' },
-        { symbol: 'ETH', change: '+2.34%' },
-        { symbol: 'ADA', change: '-0.56%' },
-        { symbol: 'SOL', change: '+0.89%' },
-    ];
+const MARKETS = [
+    { label: 'BTC', code: 'KRW-BTC' },
+    { label: 'ETH', code: 'KRW-ETH' },
+    { label: 'XRP', code: 'KRW-XRP' },
+    { label: 'SAND', code: 'KRW-SAND' },
+    { label: 'SOL', code: 'KRW-SOL' },
+];
+
+export default function Sidebar({ selected, onSelect }) {
+    // 가격·등락률 상태
+    const [tickers, setTickers] = useState({});
+
+    useEffect(() => {
+        async function load() {
+            // 백엔드 API 호출
+            const marketsCsv = MARKETS.map(m => m.code).join(',');
+            const res = await fetch(`http://localhost:8080/api/tickers?markets=${marketsCsv}`);
+            const data = await res.json();
+            // 객체 형태로 재구성
+            const obj = {};
+            data.forEach(d => {
+                obj[d.market] = {
+                    price: d.trade_price,
+                    changeRate: d.signed_change_rate,
+                };
+            });
+            setTickers(obj);
+        }
+        load();
+        const iv = setInterval(load, 60_000);  // 1분마다 업데이트
+        return () => clearInterval(iv);
+    }, []);
 
     return (
-        <aside className="hidden md:flex flex-col w-64 bg-white border-r ring-1 ring-gray-200 p-6">
-            <h2 className="flex items-center text-xl font-bold mb-6">
-                <TrendingUp className="w-6 h-6 mr-2 text-primary" />
-                코인 현황
+        <aside className="w-64 bg-white border-r p-4">
+            <h2 className="flex items-center text-lg font-semibold mb-4">
+                <FiTrendingUp className="mr-2" /> 코인 현황
             </h2>
-            <ul className="flex-1 overflow-auto space-y-3 no-scrollbar">
-                {coins.map(coin => (
-                    <li
-                        key={coin.symbol}
-                        className="flex items-center p-3 rounded-lg hover:bg-secondary hover:text-white transition cursor-pointer"
-                    >
-                        <span className="font-medium">{coin.symbol}</span>
-                        <span
-                            className={`ml-auto text-sm font-semibold ${
-                                coin.change.startsWith('+') ? 'text-success' : 'text-danger'
+            <ul className="space-y-2">
+                {MARKETS.map(({ label, code }) => {
+                    const info = tickers[code] || {};
+                    const price = info.price?.toLocaleString('ko-KR');
+                    const rate = info.changeRate != null
+                        ? (info.changeRate * 100).toFixed(2)
+                        : null;
+                    const rateColor = rate >= 0 ? 'text-green-500' : 'text-red-500';
+
+                    return (
+                        <li
+                            key={code}
+                            onClick={() => onSelect(code)}
+                            className={`p-2 rounded cursor-pointer flex justify-between items-center
+                ${selected === code
+                                ? 'bg-blue-100 font-semibold'
+                                : 'hover:bg-gray-100'
                             }`}
                         >
-              {coin.change}
-            </span>
-                    </li>
-                ))}
+                            <div>
+                                <div>{label}</div>
+                                {price && (
+                                    <div className="text-sm text-gray-600">
+                                        ₩{price}
+                                    </div>
+                                )}
+                            </div>
+                            {rate != null && (
+                                <div className={`${rateColor} font-medium`}>
+                                    {rate > 0 && '+'}{rate}%
+                                </div>
+                            )}
+                        </li>
+                    );
+                })}
             </ul>
-
         </aside>
     );
 }
