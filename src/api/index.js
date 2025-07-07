@@ -29,6 +29,9 @@ export const fetchPosts = (page = 0, size = 10) =>
 export const fetchPost = postId =>
     api.get(`/posts/${postId}`).then(res => res.data);
 
+export const fetchPostsByMarket = (market, page = 0, size = 10) =>
+    api.get(`/posts/market/${market}?page=${page}&size=${size}`).then(res => res.data);
+
 export const createPost = data =>
     api.post('/posts', data).then(res => res.data);
 

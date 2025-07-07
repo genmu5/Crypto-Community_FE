@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link, useParams } from 'react-router-dom';
 import { FiTrendingUp } from 'react-icons/fi';
 
 const MARKETS = [
@@ -9,17 +10,15 @@ const MARKETS = [
     { label: 'SOL', code: 'KRW-SOL' },
 ];
 
-export default function Sidebar({ selected, onSelect }) {
-    // 가격·등락률 상태
+export default function Sidebar() {
+    const { market: selectedMarket } = useParams();
     const [tickers, setTickers] = useState({});
 
     useEffect(() => {
         async function load() {
-            // 백엔드 API 호출
             const marketsCsv = MARKETS.map(m => m.code).join(',');
             const res = await fetch(`http://localhost:8080/api/tickers?markets=${marketsCsv}`);
             const data = await res.json();
-            // 객체 형태로 재구성
             const obj = {};
             data.forEach(d => {
                 obj[d.market] = {
@@ -30,7 +29,7 @@ export default function Sidebar({ selected, onSelect }) {
             setTickers(obj);
         }
         load();
-        const iv = setInterval(load, 60_000);  // 1분마다 업데이트
+        const iv = setInterval(load, 60_000);
         return () => clearInterval(iv);
     }, []);
 
@@ -49,28 +48,29 @@ export default function Sidebar({ selected, onSelect }) {
                     const rateColor = rate >= 0 ? 'text-green-500' : 'text-red-500';
 
                     return (
-                        <li
-                            key={code}
-                            onClick={() => onSelect(code)}
-                            className={`p-2 rounded cursor-pointer flex justify-between items-center
-                ${selected === code
-                                ? 'bg-blue-100 font-semibold'
-                                : 'hover:bg-gray-100'
-                            }`}
-                        >
-                            <div>
-                                <div>{label}</div>
-                                {price && (
-                                    <div className="text-sm text-gray-600">
-                                        ₩{price}
+                        <li key={code}>
+                            <Link
+                                to={`/board/${code}`}
+                                className={`p-2 rounded cursor-pointer flex justify-between items-center
+                                    ${selectedMarket === code
+                                        ? 'bg-blue-100 font-semibold'
+                                        : 'hover:bg-gray-100'
+                                    }`}
+                            >
+                                <div>
+                                    <div>{label}</div>
+                                    {price && (
+                                        <div className="text-sm text-gray-600">
+                                            ₩{price}
+                                        </div>
+                                    )}
+                                </div>
+                                {rate != null && (
+                                    <div className={`${rateColor} font-medium`}>
+                                        {rate > 0 && '+'}{rate}%
                                     </div>
                                 )}
-                            </div>
-                            {rate != null && (
-                                <div className={`${rateColor} font-medium`}>
-                                    {rate > 0 && '+'}{rate}%
-                                </div>
-                            )}
+                            </Link>
                         </li>
                     );
                 })}

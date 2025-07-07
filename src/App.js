@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
     BrowserRouter as Router,
     Routes,
@@ -8,7 +8,7 @@ import {
 
 import useAuth from './auth/useAuth';
 import Sidebar from './components/Sidebar';
-import Home from './pages/Home';
+import PostList from './components/PostList'; // Home 대신 PostList를 메인으로 사용
 import PostDetail from './components/PostDetail';
 import CreatePost from './pages/CreatePost';
 import Login from './pages/Login';
@@ -56,23 +56,15 @@ function Header() {
 }
 
 export default function App() {
-    // ① 선택된 마켓을 상태로 관리
-    const [selectedMarket, setSelectedMarket] = useState('KRW-BTC');
-
     return (
         <Router>
             <Header />
             <div className="pt-16 flex h-[calc(100vh-4rem)] bg-gray-50">
-                {/* ② 여기서만 사이드바 렌더, 클릭 시 state 변경 */}
-                <Sidebar
-                    selected={selectedMarket}
-                    onSelect={(code) => setSelectedMarket(code)}
-                />
-
-                {/* ③ Home 컴포넌트에 market prop 전달 */}
+                <Sidebar />
                 <main className="flex-1 p-8 overflow-auto">
                     <Routes>
-                        <Route path="/" element={<Home market={selectedMarket} />} />
+                        <Route path="/" element={<PostList />} />
+                        <Route path="/board/:market" element={<PostList />} />
                         <Route path="/post/:postId" element={<PostDetail />} />
                         <Route path="/create-post" element={<CreatePost />} />
                         <Route path="/login" element={<Login />} />

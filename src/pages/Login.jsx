@@ -7,7 +7,7 @@ export default function Login() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
-    const { login } = useAuth();        // ← Context 의 login
+    const { login } = useAuth();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -15,7 +15,7 @@ export default function Login() {
             const data = await loginAPI({ username, password });
             console.log('로그인 응답:', data);
             const token = data.token || data.accessToken || data.ACCESS_TOKEN;
-            login(token);                    // ← 여기서 Context state & localStorage 저장!
+            login(token);
             navigate('/');
         } catch (err) {
             alert('로그인 실패: ' + err.message);
