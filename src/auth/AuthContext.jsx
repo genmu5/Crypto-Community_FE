@@ -1,29 +1,58 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
+import api, { fetchCurrentUser } from '../api';
 
 export const AuthContext = createContext({});
 
 export function AuthProvider({ children }) {
-    // 1) 초기값: localStorage에 ACCESS_TOKEN이 있으면 그대로 사용
-    const [token, setToken] = useState(() =>
-        localStorage.getItem('ACCESS_TOKEN') || null
-    );
+    const [token, setToken] = useState(() => localStorage.getItem('ACCESS_TOKEN'));
+    const [refreshToken, setRefreshToken] = useState(() => localStorage.getItem('REFRESH_TOKEN'));
+    const [user, setUser] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const login = (newToken) => {
-        // 2) 로그인 시 즉시 localStorage 저장 + state 업데이트
-        localStorage.setItem('ACCESS_TOKEN', newToken);
-        setToken(newToken);
+    useEffect(() => {
+        const verifyToken = async () => {
+            if (token) {
+                try {
+                    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+                    const userData = await fetchCurrentUser();
+                    setUser(userData);
+                } catch (error) {
+                    console.error("Initial token verification failed", error);
+                    // The interceptor will handle refresh. If it fails, user will be logged out.
+                    // For safety, we can perform logout here if refresh fails.
+                    logout();
+                }
+            }
+            setIsLoading(false);
+        };
+        verifyToken();
+    }, [token]); // Run when token changes
+
+    const login = (newAccessToken, newRefreshToken) => {
+        localStorage.setItem('ACCESS_TOKEN', newAccessToken);
+        localStorage.setItem('REFRESH_TOKEN', newRefreshToken);
+        setToken(newAccessToken);
+        setRefreshToken(newRefreshToken);
+        api.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
     };
 
     const logout = () => {
-        // 3) 로그아웃 시 즉시 제거 + state 클리어
         localStorage.removeItem('ACCESS_TOKEN');
+        localStorage.removeItem('REFRESH_TOKEN');
         setToken(null);
+        setRefreshToken(null);
+        setUser(null);
+        delete api.defaults.headers.common['Authorization'];
     };
 
-    const isLoggedIn = !!token;
+    const isLoggedIn = !!token && !!user;
+
+    if (isLoading) {
+        return <div>Loading...</div>;
+    }
 
     return (
-        <AuthContext.Provider value={{ token, isLoggedIn, login, logout }}>
+        <AuthContext.Provider value={{ token, user, isLoggedIn, login, logout, isLoading }}>
             {children}
         </AuthContext.Provider>
     );

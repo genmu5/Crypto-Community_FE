@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login as loginAPI } from '../api';
+import { login as apiLogin, fetchCurrentUser } from '../api';
 import useAuth from '../auth/useAuth';
 
 export default function Login() {
@@ -12,13 +12,15 @@ export default function Login() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const data = await loginAPI({ username, password });
-            console.log('로그인 응답:', data);
-            const token = data.token || data.accessToken || data.ACCESS_TOKEN;
-            login(token);
+            // 1. API 로그인 요청, accessToken과 refreshToken을 모두 받음
+            const { accessToken, refreshToken } = await apiLogin({ username, password });
+
+            // 2. AuthContext의 login 함수를 호출하여 토큰들을 저장하고, 사용자 정보를 가져와 상태를 업데이트
+            login(accessToken, refreshToken);
+            
             navigate('/');
         } catch (err) {
-            alert('로그인 실패: ' + err.message);
+            alert('로그인 실패: ' + (err.response?.data?.message || err.message));
         }
     };
 
