@@ -45,6 +45,9 @@ export default function Login() {
                 <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded">
                     로그인
                 </button>
+                <button type="button" onClick={() => navigate('/register')} className="w-full bg-green-500 text-white py-2 rounded">
+                    회원가입
+                </button>
             </form>
         </div>
     );

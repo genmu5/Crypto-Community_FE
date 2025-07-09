@@ -12,6 +12,7 @@ import PostList from './components/PostList'; // Home 대신 PostList를 메인�
 import PostDetail from './components/PostDetail';
 import CreatePost from './pages/CreatePost';
 import Login from './pages/Login';
+import Register from './pages/Register';
 
 function Header() {
     const navigate = useNavigate();
@@ -68,6 +69,7 @@ export default function App() {
                         <Route path="/post/:postId" element={<PostDetail />} />
                         <Route path="/create-post" element={<CreatePost />} />
                         <Route path="/login" element={<Login />} />
+                        <Route path="/register" element={<Register />} />
                     </Routes>
                 </main>
             </div>
