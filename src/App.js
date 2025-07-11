@@ -35,9 +35,10 @@ function Header() {
                         글쓰기
                     </button>
                     <button
-                        onClick={() => {
-                            logout();
+                        onClick={async () => {
+                            await logout();
                             navigate('/');
+                            window.location.reload(); // [추가] 로그아웃 후 페이지 새로고침
                         }}
                         className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600 transition"
                     >

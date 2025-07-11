@@ -1,49 +1,73 @@
-import React, { createContext, useState, useEffect } from 'react';
-import api, { fetchCurrentUser } from '../api';
+import React, { createContext, useState, useEffect, useCallback } from 'react';
+import api, { fetchCurrentUser, logout as apiLogout } from '../api';
 
 export const AuthContext = createContext({});
 
 export function AuthProvider({ children }) {
-    const [token, setToken] = useState(() => localStorage.getItem('ACCESS_TOKEN'));
-    const [refreshToken, setRefreshToken] = useState(() => localStorage.getItem('REFRESH_TOKEN'));
+    const [token, setToken] = useState(null); // In-memory-only token
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
-        const verifyToken = async () => {
-            if (token) {
-                try {
-                    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-                    const userData = await fetchCurrentUser();
-                    setUser(userData);
-                } catch (error) {
-                    console.error("Initial token verification failed", error);
-                    // The interceptor will handle refresh. If it fails, user will be logged out.
-                    // For safety, we can perform logout here if refresh fails.
-                    logout();
-                }
-            }
-            setIsLoading(false);
-        };
-        verifyToken();
-    }, [token]); // Run when token changes
-
-    const login = (newAccessToken, newRefreshToken) => {
-        localStorage.setItem('ACCESS_TOKEN', newAccessToken);
-        localStorage.setItem('REFRESH_TOKEN', newRefreshToken);
+    const login = useCallback(async (newAccessToken) => {
         setToken(newAccessToken);
-        setRefreshToken(newRefreshToken);
         api.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
-    };
+        try {
+            const userData = await fetchCurrentUser();
+            setUser(userData);
+            return true; // Indicate success
+        } catch (error) {
+            console.error("Failed to fetch user after login:", error);
+            await apiLogout();
+            setToken(null);
+            setUser(null);
+            delete api.defaults.headers.common['Authorization'];
+            return false; // Indicate failure
+        }
+    }, []);
 
-    const logout = () => {
-        localStorage.removeItem('ACCESS_TOKEN');
-        localStorage.removeItem('REFRESH_TOKEN');
-        setToken(null);
-        setRefreshToken(null);
-        setUser(null);
-        delete api.defaults.headers.common['Authorization'];
-    };
+    const logout = useCallback(async () => {
+        try {
+            await apiLogout(); // 백엔드에 로그아웃 요청 보내기
+        } catch (error) {
+            console.error("Logout failed", error);
+        } finally {
+            setToken(null);
+            setUser(null);
+            delete api.defaults.headers.common['Authorization'];
+        }
+    }, []);
+
+    useEffect(() => {
+        // 토큰 재발급 성공 시 이벤트 리스너
+        const handleTokenRefreshed = (e) => {
+            const newAccessToken = e.detail;
+            login(newAccessToken); // Use the updated login function
+        };
+        // 로그아웃 이벤트 리스너
+        const handleLogout = () => logout();
+
+        window.addEventListener('tokenRefreshed', handleTokenRefreshed);
+        window.addEventListener('logout', handleLogout);
+
+        // 앱 시작 시 초기 사용자 정보 로드 시도
+        const initializeAuth = async () => {
+            try {
+                const userData = await fetchCurrentUser();
+                setUser(userData);
+            } catch (error) {
+                console.error("Initial auth check failed:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        initializeAuth();
+
+        return () => {
+            window.removeEventListener('tokenRefreshed', handleTokenRefreshed);
+            window.removeEventListener('logout', handleLogout);
+        };
+    }, [login, logout]);
 
     const isLoggedIn = !!token && !!user;
 

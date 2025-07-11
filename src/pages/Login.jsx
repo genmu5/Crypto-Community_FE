@@ -13,12 +13,16 @@ export default function Login() {
         e.preventDefault();
         try {
             // 1. API 로그인 요청, accessToken과 refreshToken을 모두 받음
-            const { accessToken, refreshToken } = await apiLogin({ username, password });
+            const { accessToken } = await apiLogin({ username, password });
 
             // 2. AuthContext의 login 함수를 호출하여 토큰들을 저장하고, 사용자 정보를 가져와 상태를 업데이트
-            login(accessToken, refreshToken);
+            const loginSuccess = await login(accessToken);
             
-            navigate('/');
+            if (loginSuccess) {
+                navigate('/');
+            } else {
+                alert('로그인 실패: 사용자 정보 로드에 실패했습니다.');
+            }
         } catch (err) {
             alert('로그인 실패: ' + (err.response?.data?.message || err.message));
         }

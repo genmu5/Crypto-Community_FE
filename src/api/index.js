@@ -2,6 +2,7 @@ import axios from 'axios';
 
 const api = axios.create({
     baseURL: 'http://localhost:8080/api',      // Spring Boot 서버 주소
+    withCredentials: true, // [추가] 쿠키 전송을 위해 필수
 });
 
 let isRefreshing = false;
@@ -18,12 +19,8 @@ const processQueue = (error, token = null) => {
     failedQueue = [];
 };
 
-// 요청 인터셉터: 로컬스토리지에 ACCESS_TOKEN 있으면 자동으로 Authorization 헤더에 붙여줌
+
 api.interceptors.request.use(config => {
-    const token = localStorage.getItem('ACCESS_TOKEN');
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    }
     return config;
 });
 
@@ -51,33 +48,24 @@ api.interceptors.response.use(
 
             isRefreshing = true; // 토큰 재발급 시작
 
-            const refreshToken = localStorage.getItem('REFRESH_TOKEN');
-
-            if (!refreshToken) {
-                // 리프레시 토큰이 없으면 바로 로그아웃
-                localStorage.removeItem('ACCESS_TOKEN');
-                localStorage.removeItem('REFRESH_TOKEN');
-                window.location.href = '/login'; // 로그인 페이지로 리다이렉트
-                return Promise.reject(error);
-            }
-
+            // Refresh Token을 쿠키에서 자동으로 보내므로 요청 본문이 필요 없음
             try {
-                const res = await axios.post(`${api.defaults.baseURL}/auth/refresh`, { refreshToken });
-                const { accessToken: newAccessToken, refreshToken: newRefreshToken } = res.data;
+                const res = await api.post('/auth/refresh'); 
+                const { accessToken: newAccessToken } = res.data; // 새로운 Access Token만 받음
 
-                localStorage.setItem('ACCESS_TOKEN', newAccessToken);
-                localStorage.setItem('REFRESH_TOKEN', newRefreshToken);
+                // AuthContext나 상태 관리 라이브러리를 통해 새 Access Token을 메모리에 업데이트해야 함
+                window.dispatchEvent(new CustomEvent('tokenRefreshed', { detail: newAccessToken }));
+
                 api.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
-
-                processQueue(null, newAccessToken); // 큐에 있는 요청들 처리
-                return api(originalRequest); // 원래 요청 재시도
+                originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
+                
+                processQueue(null, newAccessToken);
+                return api(originalRequest);
             } catch (refreshError) {
-                // 리프레시 토큰도 만료되었거나 재발급 실패 시
                 console.error('Refresh token failed:', refreshError);
-                localStorage.removeItem('ACCESS_TOKEN');
-                localStorage.removeItem('REFRESH_TOKEN');
-                processQueue(refreshError); // 큐에 있는 요청들 실패 처리
-                window.location.href = '/login'; // 로그인 페이지로 리다이렉트
+                // 로그아웃 처리 (AuthContext에서 처리)
+                window.dispatchEvent(new Event('logout'));
+                processQueue(refreshError);
                 return Promise.reject(refreshError);
             } finally {
                 isRefreshing = false;
@@ -90,8 +78,9 @@ api.interceptors.response.use(
 // ─── Auth ────────────────────────────────────────────────────────────────────
 export async function login(credentials) {
     try {
+        // 응답으로 accessToken만 받음
         const res = await api.post('/auth/login', credentials);
-        return res.data; // { accessToken: '...', refreshToken: '...' }
+        return res.data; // { accessToken: '...' }
     } catch (error) {
         console.error('Error during login API call:', error);
         throw error;
@@ -103,6 +92,9 @@ export const fetchCurrentUser = () =>
 
 export const register = data =>
     api.post('/auth/register', data).then(res => res.data);
+
+// [추가] logout API
+export const logout = () => api.post('/auth/logout');
 
 // ─── Posts ───────────────────────────────────────────────────────────────────
 export const fetchPosts = (page = 0, size = 10) =>
