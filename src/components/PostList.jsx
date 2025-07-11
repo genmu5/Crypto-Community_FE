@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import PostItem from './PostItem';
+import { useParams, useNavigate } from 'react-router-dom'; // useNavigate 추가
 import { fetchPosts, fetchPostsByMarket } from '../api';
-import CandleChart from './CandleChart'; // 차트 컴포넌트 임포트
+import CandleChart from './CandleChart';
 
 export default function PostList() {
     const [posts, setPosts] = useState([]);
-    const { market } = useParams(); // URL에서 market 파라미터 추출
+    const { market } = useParams();
+    const navigate = useNavigate(); // useNavigate 훅 사용
 
     useEffect(() => {
         const loadPosts = async () => {
@@ -35,13 +35,44 @@ export default function PostList() {
                 </section>
             )}
             <h2 className="text-2xl font-bold mb-6">{market ? `${market} 게시판` : '전체 글'}</h2>
-            <div className="grid gap-6
-                        sm:grid-cols-1
-                        md:grid-cols-2
-                        lg:grid-cols-3">
-                {posts.map(post => (
-                    <PostItem key={post.id} post={post} />
-                ))}
+            <div className="overflow-x-auto bg-white rounded-lg shadow">
+                <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-18">
+                                번호
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                제목
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                                작성자
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-40">
+                                작성일
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {posts.map((post, index) => (
+                            <tr key={post.id} className="hover:bg-gray-50 cursor-pointer"
+                                onClick={() => navigate(`/post/${post.id}`)}>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    {posts.length - index} {/* 역순으로 번호 매기기 */}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {post.title}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {post.authorUsername || '익명'} {/* 작성자 정보가 없으면 '익명' */}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {new Date(post.createdAt).toLocaleString()}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             </div>
         </div>
     );

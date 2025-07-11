@@ -29,7 +29,7 @@ export default function PostDetail() {
         <div className="bg-white rounded-2xl ring-1 ring-gray-200 shadow-lg p-6">
             <h1 className="text-2xl font-bold mb-2">{post.title}</h1>
             <div className="text-gray-500 text-sm mb-4">
-                {new Date(post.createdAt).toLocaleString()}
+                작성자: {post.authorUsername || '익명'} | {new Date(post.createdAt).toLocaleString()}
             </div>
             <p className="text-gray-700 mb-6">{post.content}</p>
 
