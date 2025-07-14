@@ -129,4 +129,14 @@ export const updateComment = (postId, commentId, comment) =>
 export const deleteComment = (postId, commentId) =>
     api.delete(`/posts/${postId}/comments/${commentId}`).then(res => res.data);
 
+// ─── User ────────────────────────────────────────────────────────────────────
+export const fetchMyPosts = (page = 0, size = 10) =>
+    api.get(`/posts/my?page=${page}&size=${size}`).then(res => res.data);
+
+export const updateUser = (data) =>
+    api.put('/user/update', data).then(res => res.data);
+
+export const deleteUser = () =>
+    api.delete('/user/delete').then(res => res.data);
+
 export default api;
