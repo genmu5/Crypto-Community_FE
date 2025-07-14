@@ -110,6 +110,12 @@ export const fetchPostsByMarket = (market, page = 0, size = 10) =>
 export const createPost = data =>
     api.post('/posts', data).then(res => res.data);
 
+export const updatePost = (postId, data) =>
+    api.put(`/posts/${postId}`, data).then(res => res.data);
+
+export const deletePost = postId =>
+    api.delete(`posts/${postId}`).then(res => res.data);
+
 // ─── Comments ────────────────────────────────────────────────────────────────
 export const fetchComments = postId =>
     api.get(`/posts/${postId}/comments`).then(res => res.data);
@@ -117,4 +123,10 @@ export const fetchComments = postId =>
 export const createComment = (postId, comment) =>
     api.post(`/posts/${postId}/comments`, comment).then(res => res.data);
 
-export default api; // api 인스턴스를 export하여 AuthContext에서 사용 가능하게 함
+export const updateComment = (postId, commentId, comment) =>
+    api.put(`/posts/${postId}/comments/${commentId}`, comment).then(res => res.data);
+
+export const deleteComment = (postId, commentId) =>
+    api.delete(`/posts/${postId}/comments/${commentId}`).then(res => res.data);
+
+export default api;
