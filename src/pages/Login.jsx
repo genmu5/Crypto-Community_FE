@@ -1,27 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login as apiLogin, fetchCurrentUser } from '../api';
-import useAuth from '../auth/useAuth';
+import { AuthContext } from '../auth/AuthContext';
 
 export default function Login() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [rememberMe, setRememberMe] = useState(false); // '로그인 상태 유지' state
+    const { signIn } = useContext(AuthContext);
     const navigate = useNavigate();
-    const { login } = useAuth();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            // 1. API 로그인 요청, accessToken과 refreshToken을 모두 받음
-            const { accessToken } = await apiLogin({ username, password });
-
-            // 2. AuthContext의 login 함수를 호출하여 토큰들을 저장하고, 사용자 정보를 가져와 상태를 업데이트
-            const loginSuccess = await login(accessToken);
-            
+            const loginSuccess = await signIn(username, password, rememberMe);
             if (loginSuccess) {
-                navigate('/');
+                navigate('/'); // 성공 시 홈으로 이동
             } else {
-                alert('로그인 실패: 사용자 정보 로드에 실패했습니다.');
+                alert('로그인에 실패했습니다. 아이디 또는 비밀번호를 확인해주세요.');
             }
         } catch (err) {
             alert('로그인 실패: ' + (err.response?.data?.message || err.message));
@@ -29,30 +24,58 @@ export default function Login() {
     };
 
     return (
-        <div className="max-w-md mx-auto bg-white shadow rounded p-6">
-            <h1 className="text-2xl font-bold mb-4">로그인</h1>
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <input
-                    type="text"
-                    placeholder="아이디"
-                    value={username}
-                    onChange={e => setUsername(e.target.value)}
-                    className="w-full border p-2 rounded"
-                />
-                <input
-                    type="password"
-                    placeholder="비밀번호"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    className="w-full border p-2 rounded"
-                />
-                <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded">
-                    로그인
-                </button>
-                <button type="button" onClick={() => navigate('/register')} className="w-full bg-green-500 text-white py-2 rounded">
-                    회원가입
-                </button>
-            </form>
+        <div className="max-w-md mx-auto mt-10">
+            <div className="bg-white rounded-2xl ring-1 ring-gray-200 shadow-lg p-8">
+                <h1 className="text-2xl font-bold mb-6 text-center">로그인</h1>
+                <form onSubmit={handleSubmit}>
+                    <div className="mb-4">
+                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="username">
+                            아이디
+                        </label>
+                        <input
+                            type="text"
+                            id="username"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            required
+                        />
+                    </div>
+                    <div className="mb-6">
+                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
+                            비밀번호
+                        </label>
+                        <input
+                            type="password"
+                            id="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+                            required
+                        />
+                    </div>
+                    <div className="flex items-center justify-between mb-6">
+                        <label className="flex items-center text-sm text-gray-600">
+                            <input
+                                type="checkbox"
+                                checked={rememberMe}
+                                onChange={(e) => setRememberMe(e.target.checked)}
+                                className="form-checkbox h-4 w-4 text-blue-600"
+                            />
+                            <span className="ml-2">로그인 상태 유지</span>
+                        </label>
+                    </div>
+                    <button
+                        type="submit"
+                        className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                    >
+                        로그인
+                    </button>
+                     <button type="button" onClick={() => navigate('/register')} className="mt-4 w-full bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                        회원가입
+                    </button>
+                </form>
+            </div>
         </div>
     );
 }

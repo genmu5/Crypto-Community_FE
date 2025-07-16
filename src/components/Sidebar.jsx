@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { FiTrendingUp } from 'react-icons/fi';
+import { FiTrendingUp, FiUser } from 'react-icons/fi';
+import useAuth from '../auth/useAuth';
 
 const MARKETS = [
     { label: 'BTC', code: 'KRW-BTC' },
@@ -13,6 +14,7 @@ const MARKETS = [
 export default function Sidebar() {
     const { market: selectedMarket } = useParams();
     const [tickers, setTickers] = useState({});
+    const { isLoggedIn } = useAuth();
 
     useEffect(() => {
         async function load() {
@@ -34,47 +36,57 @@ export default function Sidebar() {
     }, []);
 
     return (
-        <aside className="w-64 bg-white border-r p-4">
-            <h2 className="flex items-center text-lg font-semibold mb-4">
-                <FiTrendingUp className="mr-2" /> 코인 현황
-            </h2>
-            <ul className="space-y-2">
-                {MARKETS.map(({ label, code }) => {
-                    const info = tickers[code] || {};
-                    const price = info.price?.toLocaleString('ko-KR');
-                    const rate = info.changeRate != null
-                        ? (info.changeRate * 100).toFixed(2)
-                        : null;
-                    const rateColor = rate >= 0 ? 'text-green-500' : 'text-red-500';
+        <aside className="w-64 bg-white border-r p-4 flex flex-col">
+            <div className="flex-grow">
+                <h2 className="flex items-center text-lg font-semibold mb-4">
+                    <FiTrendingUp className="mr-2" /> 코인 현황
+                </h2>
+                <ul className="space-y-2">
+                    {MARKETS.map(({ label, code }) => {
+                        const info = tickers[code] || {};
+                        const price = info.price?.toLocaleString('ko-KR');
+                        const rate = info.changeRate != null
+                            ? (info.changeRate * 100).toFixed(2)
+                            : null;
+                        const rateColor = rate >= 0 ? 'text-green-500' : 'text-red-500';
 
-                    return (
-                        <li key={code}>
-                            <Link
-                                to={`/board/${code}`}
-                                className={`p-2 rounded cursor-pointer flex justify-between items-center
-                                    ${selectedMarket === code
-                                        ? 'bg-blue-100 font-semibold'
-                                        : 'hover:bg-gray-100'
-                                    }`}
-                            >
-                                <div>
-                                    <div>{label}</div>
-                                    {price && (
-                                        <div className="text-sm text-gray-600">
-                                            ₩{price}
+                        return (
+                            <li key={code}>
+                                <Link
+                                    to={`/board/${code}`}
+                                    className={`p-2 rounded cursor-pointer flex justify-between items-center
+                                        ${selectedMarket === code
+                                            ? 'bg-blue-100 font-semibold'
+                                            : 'hover:bg-gray-100'
+                                        }`}
+                                >
+                                    <div>
+                                        <div>{label}</div>
+                                        {price && (
+                                            <div className="text-sm text-gray-600">
+                                                ₩{price}
+                                            </div>
+                                        )}
+                                    </div>
+                                    {rate != null && (
+                                        <div className={`${rateColor} font-medium`}>
+                                            {rate > 0 && '+'}{rate}%
                                         </div>
                                     )}
-                                </div>
-                                {rate != null && (
-                                    <div className={`${rateColor} font-medium`}>
-                                        {rate > 0 && '+'}{rate}%
-                                    </div>
-                                )}
-                            </Link>
-                        </li>
-                    );
-                })}
-            </ul>
+                                </Link>
+                            </li>
+                        );
+                    })}
+                </ul>
+            </div>
+            {isLoggedIn && (
+                <div className="pt-4 border-t">
+                    <Link to="/mypage" className="flex items-center p-2 hover:bg-gray-100 rounded">
+                        <FiUser className="mr-2" />
+                        My Page
+                    </Link>
+                </div>
+            )}
         </aside>
     );
 }

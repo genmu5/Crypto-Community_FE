@@ -44,8 +44,8 @@ const MyPage = () => {
 
     return (
         <div className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-4">마이페이지</h1>
 
+            <h1 className="text-2xl font-bold mb-4">마이페이지</h1>
             <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
                 <h2 className="text-xl font-bold mb-4">회원 정보 수정</h2>
                 <form onSubmit={handleUpdateUser}>

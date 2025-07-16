@@ -31,12 +31,7 @@ function Header() {
             {isLoggedIn ? (
                 <div className="flex items-center space-x-2">
                     <span className="font-semibold">{user?.username}님 환영합니다!</span>
-                    <button
-                        onClick={() => navigate('/mypage')}
-                        className="bg-purple-500 text-white rounded px-4 py-2 hover:bg-purple-600 transition"
-                    >
-                        마이페이지
-                    </button>
+                    
                     <button
                         onClick={() => navigate('/create-post')}
                         className="bg-green-500 text-white rounded px-4 py-2 hover:bg-green-600 transition"
