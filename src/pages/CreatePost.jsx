@@ -9,6 +9,9 @@ const MARKETS = [
     { label: 'XRP', code: 'KRW-XRP' },
     { label: 'SAND', code: 'KRW-SAND' },
     { label: 'SOL', code: 'KRW-SOL' },
+    { label: 'DOGE', code: 'KRW-DOGE' },
+    { label: 'TRUMP', code: 'KRW-TRUMP' },
+    { label: 'STRIKE', code: 'KRW-STRIKE' },
 ];
 
 export default function CreatePost() {
