@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Chart } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
@@ -27,16 +27,13 @@ ChartJS.register(
 );
 
 export default function CandleChartCS({ market = 'KRW-BTC', limit = 100 }) {
-    const [candles, setCandles] = useState([]);
-    const [volumes, setVolumes] = useState([]);
     const candleChartRef = useRef(null);
     const volumeChartRef = useRef(null);
     const isSyncing = useRef(false);
 
-    // Fetch data
+    // Fetch data and update charts
     useEffect(() => {
-        let iv;
-        async function load() {
+        const load = async () => {
             try {
                 const res = await fetch(`http://localhost:8080/api/candles?market=${market}&limit=${limit}`);
                 if (!res.ok) throw new Error('Network response was not ok');
@@ -55,14 +52,23 @@ export default function CandleChartCS({ market = 'KRW-BTC', limit = 100 }) {
                     y: +d.candle_acc_trade_volume,
                     color: d.trade_price > d.opening_price ? "#4AFA9A" : "#E33F64",
                 }));
-                setCandles(mappedCandles);
-                setVolumes(mappedVolumes);
+
+                if (candleChartRef.current && volumeChartRef.current) {
+                    candleChartRef.current.data.datasets[0].data = mappedCandles;
+                    volumeChartRef.current.data.datasets[0].data = mappedVolumes;
+                    volumeChartRef.current.data.datasets[0].backgroundColor = mappedVolumes.map(v => v.color);
+                    
+                    candleChartRef.current.update('none'); // Use 'none' to prevent animation
+                    volumeChartRef.current.update('none');
+                }
+
             } catch (error) {
                 console.error("Failed to load chart data:", error);
             }
-        }
+        };
+
         load();
-        iv = setInterval(load, 5000);
+        const iv = setInterval(load, 5000);
         return () => clearInterval(iv);
     }, [market, limit]);
 
@@ -72,7 +78,6 @@ export default function CandleChartCS({ market = 'KRW-BTC', limit = 100 }) {
         isSyncing.current = true;
         const { min, max } = sourceChart.scales.x;
         targetChart.zoomScale('x', { min, max }, 'none');
-        // A short timeout to prevent immediate re-triggering
         setTimeout(() => { isSyncing.current = false; }, 50);
     };
 
@@ -87,7 +92,7 @@ export default function CandleChartCS({ market = 'KRW-BTC', limit = 100 }) {
         animation: false,
         layout: {
             padding: {
-                right: 50 // Add padding to the right to prevent label clipping
+                right: 50
             }
         },
         plugins: {
@@ -122,9 +127,8 @@ export default function CandleChartCS({ market = 'KRW-BTC', limit = 100 }) {
             },
             y: {
                 position: 'left',
-                // This is the key fix: force the y-axis to have a fixed width
                 afterFit: (scaleInstance) => {
-                    scaleInstance.width = 60; // Adjust this value as needed
+                    scaleInstance.width = 60;
                 },
             },
         },
@@ -151,7 +155,7 @@ export default function CandleChartCS({ market = 'KRW-BTC', limit = 100 }) {
             ...commonOptions.scales,
             x: {
                 ...commonOptions.scales.x,
-                display: false, // Hide x-axis on top chart
+                display: false,
             },
             y: {
                 ...commonOptions.scales.y,
@@ -227,9 +231,9 @@ export default function CandleChartCS({ market = 'KRW-BTC', limit = 100 }) {
                     data={{
                         datasets: [{
                             label: 'Price',
-                            data: candles,
-                            barThickness: 5, // Restore bar thickness
-                            maxBarThickness: 8, // Restore max bar thickness
+                            data: [],
+                            barThickness: 5,
+                            maxBarThickness: 8,
                         }],
                     }}
                     options={candleChartOptions}
@@ -242,8 +246,8 @@ export default function CandleChartCS({ market = 'KRW-BTC', limit = 100 }) {
                     data={{
                         datasets: [{
                             label: 'Volume',
-                            data: volumes,
-                            backgroundColor: volumes.map(v => v.color),
+                            data: [],
+                            backgroundColor: [],
                         }],
                     }}
                     options={volumeChartOptions}
