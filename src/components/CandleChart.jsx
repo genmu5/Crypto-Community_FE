@@ -248,6 +248,8 @@ export default function CandleChartCS({ market = 'KRW-BTC', limit = 100 }) {
                             label: 'Volume',
                             data: [],
                             backgroundColor: [],
+                            barThickness: 3,
+                            maxBarThickness: 6,
                         }],
                     }}
                     options={volumeChartOptions}
