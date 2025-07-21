@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Chart } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
@@ -31,6 +31,24 @@ export default function CandleChartCS({ market = 'KRW-BTC', limit = 100 }) {
     const volumeChartRef = useRef(null);
     const isSyncing = useRef(false);
 
+    const [candleData, setCandleData] = useState({
+        datasets: [{
+            label: 'Price',
+            data: [],
+            barThickness: 5,
+            maxBarThickness: 8,
+        }],
+    });
+    const [volumeData, setVolumeData] = useState({
+        datasets: [{
+            label: 'Volume',
+            data: [],
+            backgroundColor: [],
+            barThickness: 3,
+            maxBarThickness: 6,
+        }],
+    });
+
     // Fetch data and update charts
     useEffect(() => {
         const load = async () => {
@@ -53,14 +71,23 @@ export default function CandleChartCS({ market = 'KRW-BTC', limit = 100 }) {
                     color: d.trade_price > d.opening_price ? "#4AFA9A" : "#E33F64",
                 }));
 
-                if (candleChartRef.current && volumeChartRef.current) {
-                    candleChartRef.current.data.datasets[0].data = mappedCandles;
-                    volumeChartRef.current.data.datasets[0].data = mappedVolumes;
-                    volumeChartRef.current.data.datasets[0].backgroundColor = mappedVolumes.map(v => v.color);
-                    
-                    candleChartRef.current.update('none'); // Use 'none' to prevent animation
-                    volumeChartRef.current.update('none');
-                }
+                setCandleData({
+                    datasets: [{
+                        label: 'Price',
+                        data: mappedCandles,
+                        barThickness: 5,
+                        maxBarThickness: 8,
+                    }],
+                });
+                setVolumeData({
+                    datasets: [{
+                        label: 'Volume',
+                        data: mappedVolumes,
+                        backgroundColor: mappedVolumes.map(v => v.color),
+                        barThickness: 3,
+                        maxBarThickness: 6,
+                    }],
+                });
 
             } catch (error) {
                 console.error("Failed to load chart data:", error);
@@ -228,14 +255,7 @@ export default function CandleChartCS({ market = 'KRW-BTC', limit = 100 }) {
                 <Chart
                     ref={candleChartRef}
                     type="candlestick"
-                    data={{
-                        datasets: [{
-                            label: 'Price',
-                            data: [],
-                            barThickness: 5,
-                            maxBarThickness: 8,
-                        }],
-                    }}
+                    data={candleData}
                     options={candleChartOptions}
                 />
             </div>
@@ -243,15 +263,7 @@ export default function CandleChartCS({ market = 'KRW-BTC', limit = 100 }) {
                 <Chart
                     ref={volumeChartRef}
                     type="bar"
-                    data={{
-                        datasets: [{
-                            label: 'Volume',
-                            data: [],
-                            backgroundColor: [],
-                            barThickness: 3,
-                            maxBarThickness: 6,
-                        }],
-                    }}
+                    data={volumeData}
                     options={volumeChartOptions}
                 />
             </div>
