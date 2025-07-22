@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../auth/AuthContext';
 
 export default function Login() {
@@ -74,6 +74,9 @@ export default function Login() {
                      <button type="button" onClick={() => navigate('/register')} className="mt-4 w-full bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                         회원가입
                     </button>
+                    <p className="mt-4 text-center text-sm">
+                        <Link to="/forgot-password" className="text-blue-500 hover:underline">비밀번호를 잊으셨나요?</Link>
+                    </p>
                 </form>
             </div>
         </div>
