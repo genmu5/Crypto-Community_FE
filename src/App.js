@@ -8,13 +8,14 @@ import {
 
 import useAuth from './auth/useAuth';
 import Sidebar from './components/Sidebar';
-import PostList from './components/PostList'; // Home 대신 PostList를 메인으로 사용
+import PostList from './components/PostList';
 import PostDetail from './components/PostDetail';
 import CreatePost from './pages/CreatePost';
 import Login from './pages/Login';
 import Register from './pages/Register';
-
 import MyPage from './pages/MyPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 function Header() {
     const navigate = useNavigate();
@@ -76,6 +77,8 @@ export default function App() {
                         <Route path="/login" element={<Login />} />
                         <Route path="/register" element={<Register />} />
                         <Route path="/mypage" element={<MyPage />} />
+                        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                        <Route path="/reset-password" element={<ResetPasswordPage />} />
                     </Routes>
                 </main>
             </div>
