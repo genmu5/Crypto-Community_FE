@@ -62,7 +62,10 @@ api.interceptors.response.use(
                 processQueue(null, newAccessToken);
                 return api(originalRequest);
             } catch (refreshError) {
-                console.error('Refresh token failed:', refreshError);
+                // 초기 /auth/me 호출 실패는 일반적인 상황이므로 콘솔 에러를 출력하지 않음
+                if (originalRequest.url !== 'auth/me') {
+                    console.error('Refresh token failed:', refreshError);
+                }
                 // 로그아웃 처리 (AuthContext에서 처리)
                 window.dispatchEvent(new Event('logout'));
                 processQueue(refreshError);
