@@ -70,7 +70,7 @@ export function AuthProvider({ children }) {
         window.addEventListener('tokenRefreshed', handleTokenRefreshed);
         window.addEventListener('logout', handleLogout);
 
-        // 앱 시작 시 초기 사용자 정보 로드 시도 (Silent Refresh)
+        // 앱 시작 시 초기 사용자 정보 로드 시도
         const initializeAuth = async () => {
             try {
                 // api/index.js의 응답 인터셉터가 자동으로 토큰 재발급을 시도하고,

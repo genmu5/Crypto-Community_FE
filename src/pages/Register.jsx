@@ -71,25 +71,22 @@ export default function Register() {
         <form onSubmit={onSubmit} className="max-w-md mx-auto p-4">
             <h1 className="text-2xl mb-4">회원가입</h1>
 
-            {/* 아이디 입력 필드 */}
-            <div className="flex flex-col mb-2"> {/* flex-col 추가 */}
-                <div className="flex"> {/* input과 button을 감싸는 div 추가 */}
+            <div className="flex flex-col mb-2">
+                <div className="flex">
                     <input name="username" className="w-full p-2 border" placeholder="username" onChange={onChange} />
                     <button type="button" onClick={checkUsername} className="w-32 ml-2 bg-gray-500 text-white p-2">중복 확인</button>
                 </div>
                 {usernameStatus.message && <p className={usernameStatus.checked ? 'text-green-500' : 'text-red-500'}>{usernameStatus.message}</p>}
             </div>
 
-            {/* 닉네임 입력 필드 */}
-            <div className="flex flex-col my-4"> {/* flex-col 추가 */}
-                <div className="flex"> {/* input과 button을 감싸는 div 추가 */}
+            <div className="flex flex-col my-4">
+                <div className="flex">
                     <input name="nickname" className="w-full p-2 border" placeholder="nickname" onChange={onChange} />
                     <button type="button" onClick={checkNickname} className="w-32 ml-2 bg-gray-500 text-white p-2">중복 확인</button>
                 </div>
                 {nicknameStatus.message && <p className={nicknameStatus.checked ? 'text-green-500' : 'text-red-500'}>{nicknameStatus.message}</p>}
             </div>
 
-            {/* 나머지 필드 (비밀번호, 이메일) */}
             <input name="password" className="w-full mb-2 p-2 border" placeholder="password" type="password" onChange={onChange} />
             <input name="email" className="w-full mb-4 p-2 border" placeholder="email" type="email" onChange={onChange} />
 
