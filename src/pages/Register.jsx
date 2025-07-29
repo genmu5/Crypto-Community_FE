@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 export default function Register() {
     const [form, setForm] = useState({ username: '', password: '', email: '', nickname: '' });
     const [usernameStatus, setUsernameStatus] = useState({ checked: false, message: '' });
-    const [nicknameStatus, setNicknameStatus] = useState({ checked: false, message: '' });
     const nav = useNavigate();
 
     const onChange = e => {
@@ -13,9 +12,6 @@ export default function Register() {
         // 입력값이 변경되면 중복 확인 상태 초기화
         if (e.target.name === 'username') {
             setUsernameStatus({ checked: false, message: '' });
-        }
-        if (e.target.name === 'nickname') { // email -> nickname
-            setNicknameStatus({ checked: false, message: '' });
         }
     };
 
@@ -38,29 +34,10 @@ export default function Register() {
         }
     };
 
-    const checkNickname = async () => {
-        if (!form.nickname) {
-            setNicknameStatus({ checked: false, message: '닉네임을 입력해주세요.' });
-            return;
-        }
-        try {
-            const response = await fetch(`http://localhost:8080/api/user/check-nickname?nickname=${form.nickname}`);
-            const message = await response.text();
-
-            if (response.ok) {
-                setNicknameStatus({ checked: true, message });
-            } else {
-                setNicknameStatus({ checked: false, message });
-            }
-        } catch (error) {
-            setNicknameStatus({ checked: false, message: '오류가 발생했습니다.' });
-        }
-    };
-
     const onSubmit = async e => {
         e.preventDefault();
-        if (!usernameStatus.checked || !nicknameStatus.checked) {
-            alert('아이디와 닉네임 중복 확인을 완료해야 합니다.');
+        if (!usernameStatus.checked) {
+            alert('아이디 중복 확인을 완료해야 합니다.');
             return;
         }
         await apiRegister(form);
@@ -79,18 +56,18 @@ export default function Register() {
                 {usernameStatus.message && <p className={usernameStatus.checked ? 'text-green-500' : 'text-red-500'}>{usernameStatus.message}</p>}
             </div>
 
-            <div className="flex flex-col my-4">
-                <div className="flex">
-                    <input name="nickname" className="w-full p-2 border" placeholder="nickname" onChange={onChange} />
-                    <button type="button" onClick={checkNickname} className="w-32 ml-2 bg-gray-500 text-white p-2">중복 확인</button>
-                </div>
-                {nicknameStatus.message && <p className={nicknameStatus.checked ? 'text-green-500' : 'text-red-500'}>{nicknameStatus.message}</p>}
-            </div>
+            {/*<div className="flex flex-col my-4">*/}
+            {/*    <div className="flex">*/}
+            {/*        <input name="nickname" className="w-full p-2 border" placeholder="nickname" onChange={onChange} />*/}
+            {/*        <button type="button" onClick={checkNickname} className="w-32 ml-2 bg-gray-500 text-white p-2">중복 확인</button>*/}
+            {/*    </div>*/}
+            {/*    {nicknameStatus.message && <p className={nicknameStatus.checked ? 'text-green-500' : 'text-red-500'}>{nicknameStatus.message}</p>}*/}
+            {/*</div>*/}
 
             <input name="password" className="w-full mb-2 p-2 border" placeholder="password" type="password" onChange={onChange} />
             <input name="email" className="w-full mb-4 p-2 border" placeholder="email" type="email" onChange={onChange} />
 
-            <button type="submit" disabled={!usernameStatus.checked || !nicknameStatus.checked} className="w-full bg-green-500 text-white p-2 disabled:bg-gray-300">
+            <button type="submit" disabled={!usernameStatus.checked} className="w-full bg-green-500 text-white p-2 disabled:bg-gray-300">
                 가입하기
             </button>
         </form>
