@@ -16,6 +16,7 @@ import Register from './pages/Register';
 import MyPage from './pages/MyPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import VerifyPasswordPage from './pages/VerifyPasswordPage';
 
 function Header() {
     const navigate = useNavigate();
@@ -79,6 +80,7 @@ export default function App() {
                         <Route path="/mypage" element={<MyPage />} />
                         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                         <Route path="/reset-password" element={<ResetPasswordPage />} />
+                        <Route path="/verify-password" element={<VerifyPasswordPage />} />
                     </Routes>
                 </main>
             </div>

@@ -1,20 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { fetchMyPosts, updateUser, deleteUser } from '../api';
 import useAuth from '../auth/useAuth';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const MyPage = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
     const [myPosts, setMyPosts] = useState([]);
     const [email, setEmail] = useState(user?.email || '');
     const [password, setPassword] = useState('');
 
     useEffect(() => {
+        if (location.state?.fromVerification !== true) {
+            navigate('/verify-password');
+            return; // 리디렉션 후 추가 실행 방지
+        }
+
         fetchMyPosts().then(data => {
             setMyPosts(data.content);
         });
-    }, []);
+    }, [location, navigate]);
 
     const handleUpdateUser = async (e) => {
         e.preventDefault();

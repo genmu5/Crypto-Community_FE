@@ -84,7 +84,7 @@ export default function Sidebar() {
             </div>
             {isLoggedIn && (
                 <div className="pt-4 border-t">
-                    <Link to="/mypage" className="flex items-center p-2 hover:bg-gray-100 rounded">
+                    <Link to="/verify-password" className="flex items-center p-2 hover:bg-gray-100 rounded">
                         <FiUser className="mr-2" />
                         My Page
                     </Link>
