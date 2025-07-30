@@ -12,6 +12,7 @@ import {
 import zoomPlugin from 'chartjs-plugin-zoom';
 import { CandlestickController, CandlestickElement } from 'chartjs-chart-financial';
 import 'chartjs-adapter-date-fns';
+import api from '../api';
 
 // Register necessary components
 ChartJS.register(
@@ -53,9 +54,8 @@ export default function CandleChartCS({ market = 'KRW-BTC', limit = 100 }) {
     useEffect(() => {
         const load = async () => {
             try {
-                const res = await fetch(`http://localhost:8080/api/candles?market=${market}&limit=${limit}`);
-                if (!res.ok) throw new Error('Network response was not ok');
-                const data = await res.json();
+                const res = await api.get(`/candles?market=${market}&limit=${limit}`);
+                const data = res.data;
                 const sortedData = data.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
                 const mappedCandles = sortedData.map(d => ({

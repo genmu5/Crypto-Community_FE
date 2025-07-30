@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { register as apiRegister } from '../api';
 import { useNavigate } from 'react-router-dom';
+import api from '../api';
 
 export default function Register() {
     const [form, setForm] = useState({ username: '', password: '', email: '', nickname: '' });
@@ -21,16 +22,12 @@ export default function Register() {
             return;
         }
         try {
-            const response = await fetch(`http://localhost:8080/api/user/check-username?username=${form.username}`);
-            const message = await response.text();
+            const response = await api.get(`/user/check-username?username=${form.username}`);
+            const message = response.data;
 
-            if (response.ok) {
-                setUsernameStatus({ checked: true, message });
-            } else {
-                setUsernameStatus({ checked: false, message });
-            }
+            setUsernameStatus({ checked: true, message });
         } catch (error) {
-            setUsernameStatus({ checked: false, message: "오류가 발생했습니다." });
+            setUsernameStatus({ checked: false, message: error.response.data || "오류가 발생했습니다." });
         }
     };
 

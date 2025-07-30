@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { FiTrendingUp, FiUser } from 'react-icons/fi';
 import useAuth from '../auth/useAuth';
+import api from '../api';
 
 const MARKETS = [
     { label: 'BTC', code: 'KRW-BTC' },
@@ -22,8 +23,8 @@ export default function Sidebar() {
     useEffect(() => {
         async function load() {
             const marketsCsv = MARKETS.map(m => m.code).join(',');
-            const res = await fetch(`http://localhost:8080/api/tickers?markets=${marketsCsv}`);
-            const data = await res.json();
+            const res = await api.get(`/tickers?markets=${marketsCsv}`);
+            const data = res.data;
             const obj = {};
             data.forEach(d => {
                 obj[d.market] = {
